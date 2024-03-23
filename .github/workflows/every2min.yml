@@ -2,9 +2,9 @@ name: Run Python Script Every 2 Minutes and Manual Trigger
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
-  workflow_dispatch:  # Manually trigger the workflow
-
+ - cron: '0 */2 * * *'  # Ação agendada para rodar a cada 2 horas
+  workflow_dispatch:  # Acionamento manual do fluxo de trabalho
+  
 jobs:
   run_python_script:
     runs-on: ubuntu-latest
