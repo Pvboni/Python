@@ -2,7 +2,7 @@ name: Run Python Script Every 2 Hours and Manual Trigger
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # Ação agendada para rodar a cada 2 horas
+    - cron: '0 */8 * * *'  # Ação agendada para rodar a cada 2 horas
   workflow_dispatch:  # Acionamento manual do fluxo de trabalho
 
 jobs:
