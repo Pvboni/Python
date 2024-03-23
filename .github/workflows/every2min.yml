@@ -1,0 +1,27 @@
+name: Run Python Script Every 2 Minutes
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'  # Run every 2 minutes
+
+jobs:
+  run_python_script:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'  # Specify the Python version you want to use
+
+    - name: Install dependencies
+      run: |
+        pip install feedparser
+        pip install secure-smtplib
+
+    - name: Execute Python script
+      run: python Pontosparavoar.py  # Replace 'Pontosparavoar.py' with the name of your Python script
