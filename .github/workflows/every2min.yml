@@ -1,10 +1,10 @@
-name: Run Python Script Every 2 Minutes and Manual Trigger
+name: Run Python Script Every 2 Hours and Manual Trigger
 
 on:
   schedule:
- - cron: '0 */2 * * *'  # Ação agendada para rodar a cada 2 horas
+    - cron: '0 */2 * * *'  # Ação agendada para rodar a cada 2 horas
   workflow_dispatch:  # Acionamento manual do fluxo de trabalho
-  
+
 jobs:
   run_python_script:
     runs-on: ubuntu-latest
@@ -26,7 +26,7 @@ jobs:
 
       - name: Determine next run time
         run: |
-          next_run_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ" -d '+15 minutes')
+          next_run_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ" -d '+2 hours')
           if echo "$next_run_time" > next_run_time.txt; then
             echo "Next run time: $next_run_time"
           else
