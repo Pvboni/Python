@@ -33,7 +33,7 @@ def send_email(sender_email, receiver_email, subject, body):
 
     server = smtplib.SMTP(smtp_server, smtp_port)
     server.starttls()
-    # Usar a senha fornecida anteriormente
+    # Use a senha fornecida anteriormente
     server.login(sender_email, 'imji vpva npah mwyd')
 
     server.sendmail(sender_email, receiver_email, message.as_string())
@@ -46,7 +46,7 @@ def check_for_radar_ppv(news):
             return True
     return False
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     rss_url = "https://pontospravoar.com/feed/"
     sender_email = 'pvboni@gmail.com'
     receiver_email = 'pvboni@gmail.com'
