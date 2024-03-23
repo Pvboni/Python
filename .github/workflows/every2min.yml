@@ -2,7 +2,7 @@ name: Run Python Script Every 2 Minutes and Manual Trigger
 
 on:
   schedule:
-    - cron: '22 22 * * *' # Runs at 00:40 UTC every day
+    - cron: */15 * * * * 
   workflow_dispatch:  # Manually trigger the workflow
 
 jobs:
