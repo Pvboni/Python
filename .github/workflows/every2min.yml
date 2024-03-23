@@ -2,27 +2,27 @@ name: Run Python Script Every 2 Minutes and Manual Trigger
 
 on:
   schedule:
-    - cron: */15 * * * * 
+    - cron: '*/15 * * * *'
   workflow_dispatch:  # Manually trigger the workflow
 
 jobs:
   run_python_script:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.head_ref }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'  # Specify the Python version you want to use
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'  # Specify the Python version you want to use
 
-    - name: Install dependencies
-      run: |
-        pip install feedparser
-        pip install secure-smtplib
+      - name: Install dependencies
+        run: |
+          pip install feedparser
+          pip install secure-smtplib
 
-    - name: Execute Python script
-      run: python Pontosparavoar.py  # Replace 'Pontosparavoar.py' with the name of your Python script
+      - name: Execute Python script
+        run: python Pontosparavoar.py  # Replace 'Pontosparavoar.py' with the name of your Python script
