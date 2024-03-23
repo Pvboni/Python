@@ -26,7 +26,9 @@ jobs:
 
       - name: Output next run time
         run: |
-          python -c "from datetime import datetime, timedelta; next_run = datetime.now() + timedelta(minutes=15); print(f'Next run time: {next_run.strftime('%Y-%m-%d %H:%M:%S')}')" > next_run_time.txt
+          next_run=$(date -d '+15 minutes' +'%Y-%m-%d %H:%M:%S')
+          echo "Next run time: $next_run" > next_run_time.txt
+          echo "Next run time: $next_run"
 
       - name: Execute Python script
         run: python Pontosparavoar.py
