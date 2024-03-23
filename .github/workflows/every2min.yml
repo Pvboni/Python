@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'  # Specify the Python version you want to use
+          python-version: '3.x'
 
       - name: Install dependencies
         run: |
@@ -25,7 +25,8 @@ jobs:
           pip install secure-smtplib
 
       - name: Output next run time
-        run: echo "Next run time: $(date -d '+900 seconds' +'%Y-%m-%d %H:%M:%S')" > next_run_time.txt
+        run: |
+          python -c "from datetime import datetime, timedelta; next_run = datetime.now() + timedelta(minutes=15); print(f'Next run time: {next_run.strftime('%Y-%m-%d %H:%M:%S')}')" > next_run_time.txt
 
       - name: Execute Python script
-        run: python Pontosparavoar.py  # Replace 'Pontosparavoar.py' with the name of your Python script
+        run: python Pontosparavoar.py
