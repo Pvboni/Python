@@ -49,7 +49,7 @@ def check_for_radar_ppv(news):
 if _name_ == "_main_":
     rss_url = "https://pontospravoar.com/feed/"
     sender_email = 'pvboni@gmail.com'
-    receiver_email = 'pvboni@gmail.com; Pedro.boni@versuni.com'
+    receiver_email = 'pvboni@gmail.com'
     latest_news = fetch_latest_news_rss(rss_url)
     print("Latest news:", latest_news)  # Verificar se os dados foram obtidos corretamente
     email_subject = "News: Pontos para voar"  # Título do e-mail
