@@ -25,7 +25,7 @@ jobs:
           pip install secure-smtplib
 
       - name: Output next run time
-        run: echo "Next run time: $(date -d '+15 minutes' +'%Y-%m-%d %H:%M:%S')" > next_run_time.txt
+        run: echo "Next run time: $(date -d '+900 seconds' +'%Y-%m-%d %H:%M:%S')" > next_run_time.txt
 
       - name: Execute Python script
         run: python Pontosparavoar.py  # Replace 'Pontosparavoar.py' with the name of your Python script
