@@ -2,8 +2,8 @@ name: Run Python Script Every 2 Hours and Manual Trigger
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # Ação agendada para rodar a cada 2 horas
-  workflow_dispatch:  # Acionamento manual do fluxo de trabalho
+    - cron: '0 */2 * * *'  # Executa a cada 2 horas
+  workflow_dispatch:  # Disparo manual do fluxo de trabalho
 
 jobs:
   run_python_script:
@@ -25,17 +25,13 @@ jobs:
           pip install secure-smtplib
 
       - name: Determine next run time
+        id: next_run_time
         run: |
           next_run_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ" -d '+2 hours')
-          if echo "$next_run_time" > next_run_time.txt; then
-            echo "Next run time: $next_run_time"
-          else
-            echo "Error: Failed to create next_run_time.txt file."
-            exit 1
-          fi
+          echo "::set-output name=next_run_time::$next_run_time"
 
-      - name: Show next run time
-        run: cat next_run_time.txt
+      - name: Output next run time
+        run: echo "Next run time: ${{ steps.next_run_time.outputs.next_run_time }}"
 
       - name: Execute Python script
-        run: python Pontosparavoar.py
+        run: python Pontosparavoar.py "${{ steps.next_run_time.outputs.next_run_time }}"
