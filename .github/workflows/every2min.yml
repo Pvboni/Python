@@ -26,9 +26,16 @@ jobs:
 
       - name: Output next run time
         run: |
-          next_run=$(date -d '+15 minutes' +'%Y-%m-%d %H:%M:%S')
-          echo "Next run time: $next_run" > next_run_time.txt
-          echo "Next run time: $next_run"
+          next_run_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ" -d '+15 minutes')
+          if echo "Next run time: $next_run_time" > next_run_time.txt; then
+            echo "Next run time: $next_run_time"
+          else
+            echo "Error: Failed to create next_run_time.txt file."
+            exit 1
+          fi
+
+      - name: Show next run time
+        run: cat next_run_time.txt
 
       - name: Execute Python script
         run: python Pontosparavoar.py
