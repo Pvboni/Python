@@ -2,7 +2,7 @@ import feedparser
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import sys
+from datetime import datetime
 
 def fetch_latest_news_rss(url):
     news_feed = feedparser.parse(url)
@@ -14,11 +14,10 @@ def fetch_latest_news_rss(url):
             latest_news.append({'title': title, 'link': link})
     return latest_news
 
-def create_email_body(news, next_run_time):
+def create_email_body(news):
     body = "Latest news:\n\n"
     for article in news:
         body += f"{article['title']}\n{article['link']}\n\n"
-    body += f"\nNext run time: {next_run_time}\n"
     return body
 
 def send_email(sender_email, receiver_email, subject, body):
@@ -47,21 +46,20 @@ def check_for_radar_ppv(news):
             return True
     return False
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     rss_url = "https://pontospravoar.com/feed/"
     sender_email = 'pvboni@gmail.com'
-    receiver_email = 'pvboni@gmail.com'
-    next_run_time = sys.argv[1]  # Obtém o próximo horário de execução a partir dos argumentos de linha de comando
+    receiver_email = 'pvboni@gmail.com; Pedro.boni@versuni.com'
     latest_news = fetch_latest_news_rss(rss_url)
     print("Latest news:", latest_news)  # Verificar se os dados foram obtidos corretamente
     email_subject = "News: Pontos para voar"  # Título do e-mail
-    email_body = create_email_body(latest_news, next_run_time)
+    email_body = create_email_body(latest_news)
     print("Email body:", email_body)  # Verificar o corpo do e-mail
     
     if check_for_radar_ppv(latest_news):
         email_subject += " - Radar PPV"
     
     if len(latest_news) > 10:
-        email_body = create_email_body(latest_news, next_run_time)
+        email_body = create_email_body(latest_news)
     
     send_email(sender_email, receiver_email, email_subject, email_body)
