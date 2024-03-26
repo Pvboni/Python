@@ -19,10 +19,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-      pip install feedparser
-      pip install requests
-      pip install beautifulsoup4
-      pip install google-generativeai
+         pip install feedparser
+         pip install requests
+         pip install beautifulsoup4
+         pip install google-generativeai
+
       
     - name: Execute Python script
       run: python PythonTest.py  # Replace 'PythonTest.py' with the name of your Python script
