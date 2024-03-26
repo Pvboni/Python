@@ -55,7 +55,7 @@ def fetch_summary_and_content(url):
         return "Error fetching URL.", None
 
 # Example usage
-url = "https://pontospravoar.com/trs-estratgias-para-usar-nos-trs-meses-gratis-da-conta-santander-select/"
+url = "https://pontospravoar.com/tres-estrategias-para-usar-nos-tres-meses-gratis-da-conta-santander-select/"
 summary, content = fetch_summary_and_content(url)
 print("Summary:", summary)
 print("Content:", content)
