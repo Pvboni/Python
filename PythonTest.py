@@ -16,7 +16,7 @@ def fetch_latest_news_rss(urls):
         news_feed = feedparser.parse(url)
         if 'entries' in news_feed:
             for entry in news_feed.entries:
-                title = clean_text(entry.title.strip())  # Clean the news title
+                title = clean_text(entry.title.strip())
                 link = entry.link
                 published_date = entry.published_parsed
                 today = datetime.date.today()  
@@ -27,31 +27,33 @@ def fetch_latest_news_rss(urls):
     return latest_news
 
 def clean_text(text):
-    # Remove special characters using regular expressions
     cleaned_text = re.sub(r'[^\x00-\x7F]+', '', text)
     return cleaned_text
 
 def get_summary(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'html.parser')
-        paragraphs = soup.find_all('p')
-        summary = '\n'.join([paragraph.text.strip() for paragraph in paragraphs[:3]])
-        return summary
-    else:
-        print(f"Error fetching summary from URL: {url}")
-        return None
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            paragraphs = soup.find_all('p')
+            summary = '\n'.join([paragraph.text.strip() for paragraph in paragraphs[:3]])
+            return summary
+        else:
+            print(f"Error fetching summary from URL: {url}")
+            return "Summary unavailable"
+    except Exception as e:
+        print(f"Error fetching summary from URL: {url}\n{e}")
+        return "Summary unavailable"
 
 def generate_content_with_gemini_api(news_titles):
     # Initialize GenerativeModel
     model = genai.GenerativeModel('gemini-pro')
-
-    # Generate content for each news title using Gemini API
     generated_content = []
-    for title in news_titles:
+
+    for news in news_titles:
         # Define the question using JSON
         question_json = {
-            "question": title
+            "question": news['title']
         }
 
         # Convert the JSON to a string
@@ -60,14 +62,14 @@ def generate_content_with_gemini_api(news_titles):
         # Generate content
         response = model.generate_content(prompt)
 
-        if response.successful:
-            # Append the response text to the list of generated content
+        if response.status_code == 200:
             generated_content.append(response.text)
         else:
-            print(f"Error generating content for title: {title}")
-            generated_content.append(None)
+            print(f"Error generating content for title: {news['title']}")
+            generated_content.append("Content generation failed")
 
     return generated_content
+
 
 if __name__ == "__main__":
     rss_urls = [
@@ -75,17 +77,10 @@ if __name__ == "__main__":
         "https://passageirodeprimeira.com/feed/"
     ]
 
-    # Fetch latest news titles from RSS feeds
     latest_news = fetch_latest_news_rss(rss_urls)
-    news_titles = [news['title'] for news in latest_news]
+    generated_content = generate_content_with_gemini_api(latest_news)
 
-    # Generate content for news titles using Gemini API
-    generated_content = generate_content_with_gemini_api(news_titles)
-
-    # Print the generated content for each news title
-    for title, content in zip(news_titles, generated_content):
-        print(f"Title: {title}")
-        if content:
-            print(f"Generated Content: {content}\n")
-        else:
-            print("Failed to generate content.\n")
+    for news, content in zip(latest_news, generated_content):
+        print(f"Title: {news['title']}")
+        print(f"Summary: {news['summary']}")
+        print(f"Generated content: {content}\n")
