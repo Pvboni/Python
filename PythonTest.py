@@ -60,7 +60,7 @@ def generate_content_with_gemini_api(news_titles):
         # Generate content
         response = model.generate_content(prompt)
 
-        if response.status_code == 200:
+        if response.success:
             # Append the response text to the list of generated content
             generated_content.append(response.text)
         else:
