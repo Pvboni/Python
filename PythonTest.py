@@ -43,13 +43,13 @@ def get_summary_with_strainer(url):
                 summary = '\n'.join([p.text.strip() for p in summary_paragraphs])
                 return summary
             else:
-                print(f"Summary element not found for URL: {url}")
+                return "Summary not found on the page."
         else:
-            print(f"Error fetching summary from URL: {url}. Status code: {response.status_code}")
+            return f"Error fetching summary from URL: {url}. Status code: {response.status_code}"
     except requests.RequestException as e:
-        print(f"Request error fetching summary from URL: {url}\n{e}")
+        return f"Request error fetching summary from URL: {url}\n{e}"
     except Exception as e:
-        print(f"Error fetching summary from URL: {url}\n{e}")
+        return f"Error fetching summary from URL: {url}\n{e}"
     return "Summary unavailable"
 
 
@@ -64,15 +64,14 @@ def get_content_with_regex(url, content_regex):
                 content = match.group(1)  # Assuming the first capturing group holds the content
                 return content
             else:
-                print(f"Content not found matching regex for URL: {url}")
+                return "Content not found on the page."
         else:
-            print(f"Error fetching content from URL: {url}. Status code: {response.status_code}")
+            return f"Error fetching content from URL: {url}. Status code: {response.status_code}"
     except requests.RequestException as e:
-        print(f"Request error fetching content from URL: {url}\n{e}")
+        return f"Request error fetching content from URL: {url}\n{e}"
     except Exception as e:
-        print(f"Error fetching content from URL: {url}\n{e}")
-    return "Content unavailable"
-
+        return f"Error fetching content from URL: {url}\n{e}"
+    return "Content extraction failed"
 
 def generate_content_with_gemini_api(news_titles):
     # Initialize GenerativeModel
