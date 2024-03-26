@@ -32,25 +32,23 @@ def clean_text(text):
     return cleaned_text
 
 def get_summary_with_strainer(url):
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            # Define a strainer to find all <p> tags within a specific class (e.g., "summary")
-            summary_strainer = SoupStrainer("p", class_="summary")
-            soup = BeautifulSoup(response.content, 'html.parser', parse_only=summary_strainer)
-            summary_paragraphs = soup.find_all('p')
-            if summary_paragraphs:
-                summary = '\n'.join([p.text.strip() for p in summary_paragraphs])
-                return summary
-            else:
-                return "Summary not found on the page."
+    response = requests.get(url)
+    if response.status_code == 200:
+        # Define a strainer to target elements with specific id or class
+        summary_strainer = SoupStrainer("div", class_="summary-container")
+        soup = BeautifulSoup(response.content, 'html.parser', parse_only=summary_strainer)
+        # Find the summary within the targeted section
+        summary = soup.get_text(separator='\n').strip()
+        if summary:
+            return summary
         else:
-            return f"Error fetching summary from URL: {url}. Status code: {response.status_code}"
-    except requests.RequestException as e:
-        return f"Request error fetching summary from URL: {url}\n{e}"
-    except Exception as e:
-        return f"Error fetching summary from URL: {url}\n{e}"
-    return "Summary unavailable"
+            return "Summary not found on the page."
+    else:
+        return "Failed to fetch the webpage."
+
+# Test the function
+url = "https://example.com"
+print(get_summary_with_strainer(url))
 
 
 def get_content_with_regex(url, content_regex):
