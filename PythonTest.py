@@ -61,6 +61,9 @@ def generate_content_with_gemini_api(news_titles):
 
         # Generate content
         response = model.generate_content(prompt)
+        
+        # Debug print to inspect response
+        print("Response:", response)
 
         # Check if content generation was successful
         if response.candidates:
@@ -76,6 +79,9 @@ def generate_content_with_gemini_api(news_titles):
             elif hasattr(candidate_content, 'parts'):
                 extracted_content = " ".join([part.text for part in candidate_content.parts])
 
+            # Log the type of extracted content
+            print(f"Extracted content type: {type(extracted_content)}")
+
             # Append extracted content or a placeholder message
             if extracted_content:
                 generated_content.append(extracted_content)
@@ -86,8 +92,6 @@ def generate_content_with_gemini_api(news_titles):
             generated_content.append("Content generation failed")
 
     return generated_content
-
-
 
 if __name__ == "__main__":
     rss_urls = [
