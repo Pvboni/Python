@@ -51,9 +51,12 @@ def generate_content_with_gemini_api(news_titles):
     generated_content = []
 
     for news in news_titles:
-        # Define the question using JSON
+        # Define the question using JSON with context
         question_json = {
-            "question": news['title']
+            "question": news['title'],
+            "categories": ["News"],
+            "keywords": extract_keywords(news['title']),
+            "sentence": "Here's the latest news:"
         }
 
         # Convert the JSON to a string
@@ -92,6 +95,11 @@ def generate_content_with_gemini_api(news_titles):
             generated_content.append("Content generation failed")
 
     return generated_content
+
+def extract_keywords(text):
+    # Placeholder function to extract keywords from the news title
+    # You can implement more sophisticated keyword extraction methods here
+    return re.findall(r'\b\w{5,}\b', text)
 
 if __name__ == "__main__":
     rss_urls = [
