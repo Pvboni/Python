@@ -62,13 +62,14 @@ def generate_content_with_gemini_api(news_titles):
         # Generate content
         response = model.generate_content(prompt)
 
-        if response.status_code == 200:
+        if response.status == "OK":
             generated_content.append(response.text)
         else:
             print(f"Error generating content for title: {news['title']}")
             generated_content.append("Content generation failed")
 
     return generated_content
+
 
 
 if __name__ == "__main__":
