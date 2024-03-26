@@ -2,7 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 
 def get_summary_and_content(url):
-    response = requests.get(url)
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for 4xx and 5xx status codes
+    except requests.exceptions.RequestException as e:
+        return "Error fetching URL: " + str(e), None
+
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
         
@@ -23,7 +28,7 @@ def get_summary_and_content(url):
             return "Summary or content not found on the page.", None
     
     else:
-        return "Error fetching URL.", None
+        return "Unexpected status code: " + str(response.status_code), None
 
 # Test the function with a sample URL
 url = "https://pontospravoar.com/trs-estratgias-para-usar-nos-trs-meses-gratis-da-conta-santander-select/"
