@@ -66,15 +66,15 @@ def generate_content_with_gemini_api(news_titles):
         if response.candidates:
             # Extract content from the first candidate
             candidate_content = response.candidates[0].content
-            extracted_content = None
             
             # Attempt to extract text content from available attributes
+            extracted_content = None
             if hasattr(candidate_content, 'text'):
                 extracted_content = candidate_content.text
-            elif hasattr(candidate_content, 'title'):
-                extracted_content = candidate_content.title
-            elif hasattr(candidate_content, 'summary'):
-                extracted_content = candidate_content.summary
+            elif hasattr(candidate_content, 'text_list'):
+                extracted_content = " ".join(candidate_content.text_list)
+            elif hasattr(candidate_content, 'parts'):
+                extracted_content = " ".join([part.text for part in candidate_content.parts])
 
             # Append extracted content or a placeholder message
             if extracted_content:
@@ -86,6 +86,7 @@ def generate_content_with_gemini_api(news_titles):
             generated_content.append("Content generation failed")
 
     return generated_content
+
 
 
 if __name__ == "__main__":
