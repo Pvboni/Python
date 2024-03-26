@@ -66,15 +66,27 @@ def generate_content_with_gemini_api(news_titles):
         if response.candidates:
             # Extract content from the first candidate
             candidate_content = response.candidates[0].content
-            # Check available attributes of Content object
-            print(dir(candidate_content))  # Print available attributes
-            # Append a placeholder message to indicate content extraction failure
-            generated_content.append("Content extraction failed")
+            extracted_content = None
+            
+            # Attempt to extract text content from available attributes
+            if hasattr(candidate_content, 'text'):
+                extracted_content = candidate_content.text
+            elif hasattr(candidate_content, 'title'):
+                extracted_content = candidate_content.title
+            elif hasattr(candidate_content, 'summary'):
+                extracted_content = candidate_content.summary
+
+            # Append extracted content or a placeholder message
+            if extracted_content:
+                generated_content.append(extracted_content)
+            else:
+                generated_content.append("Content extraction failed")
         else:
             print(f"Error generating content for title: {news['title']}. No candidates found.")
             generated_content.append("Content generation failed")
 
     return generated_content
+
 
 if __name__ == "__main__":
     rss_urls = [
