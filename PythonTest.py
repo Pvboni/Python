@@ -2,7 +2,7 @@ import feedparser
 import requests
 import json
 import datetime
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, SoupStrainer
 import re
 import time
 import google.generativeai as genai
@@ -31,53 +31,47 @@ def clean_text(text):
     cleaned_text = re.sub(r'[^\x00-\x7F]+', '', text)
     return cleaned_text
 
-def get_summary(url, max_retries=2, retry_delay=2):
-    """
-    Fetches a summary of the article at the given URL.
-
-    Args:
-        url (str): The URL of the article.
-        max_retries (int): The maximum number of retries to attempt fetching the summary 
-                           in case of errors (default: 2).
-        retry_delay (int): The delay (in seconds) between retries (default: 2).
-
-    Returns:
-        str: A string containing the summary of the article or "Summary unavailable"
-             if the summary cannot be fetched.
-    """
-
-    # Iterate through the number of retries
-    for attempt in range(max_retries + 1):
-        try:
-            # Send a GET request to the URL
-            response = requests.get(url)
-            # Check if the response status code is 200 (OK)
-            if response.status_code == 200:
-                # Parse the HTML content of the response
-                soup = BeautifulSoup(response.content, 'html.parser')
-                # Find all paragraphs in the HTML content
-                paragraphs = soup.find_all('p')
-                # Extract the text from the first 3 paragraphs and join them
-                summary = '\n'.join([paragraph.text.strip() for paragraph in paragraphs[:3]])
-                # Return the summary
+def get_summary_with_strainer(url):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            # Define a strainer to find all <p> tags within a specific class (e.g., "summary")
+            summary_strainer = SoupStrainer("p", class_="summary")
+            soup = BeautifulSoup(response.content, 'html.parser', parse_only=summary_strainer)
+            summary_paragraphs = soup.find_all('p')
+            if summary_paragraphs:
+                summary = '\n'.join([p.text.strip() for p in summary_paragraphs])
                 return summary
             else:
-                # Print an error message if the status code is not 200
-                print(f"Error fetching summary from URL: {url}. Status code: {response.status_code}")
-        except requests.RequestException as e:
-            # Print an error message for request exceptions
-            print(f"Request error fetching summary from URL: {url}\n{e}")
-        except Exception as e:
-            # Print an error message for other exceptions
-            print(f"Error fetching summary from URL: {url}\n{e}")
-        finally:
-            # Check if there are more retries left and apply delay between retries
-            if attempt < max_retries:
-                print(f"Retrying fetching summary for URL: {url} (attempt {attempt+1}/{max_retries+1})...")
-                time.sleep(retry_delay)
-
-    # Return "Summary unavailable" if all retries fail
+                print(f"Summary element not found for URL: {url}")
+        else:
+            print(f"Error fetching summary from URL: {url}. Status code: {response.status_code}")
+    except requests.RequestException as e:
+        print(f"Request error fetching summary from URL: {url}\n{e}")
+    except Exception as e:
+        print(f"Error fetching summary from URL: {url}\n{e}")
     return "Summary unavailable"
+
+
+def get_content_with_regex(url, content_regex):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            text = soup.get_text(separator='\n')  # Combine text from all elements
+            match = re.search(content_regex, text)
+            if match:
+                content = match.group(1)  # Assuming the first capturing group holds the content
+                return content
+            else:
+                print(f"Content not found matching regex for URL: {url}")
+        else:
+            print(f"Error fetching content from URL: {url}. Status code: {response.status_code}")
+    except requests.RequestException as e:
+        print(f"Request error fetching content from URL: {url}\n{e}")
+    except Exception as e:
+        print(f"Error fetching content from URL: {url}\n{e}")
+    return "Content unavailable"
 
 
 def generate_content_with_gemini_api(news_titles):
