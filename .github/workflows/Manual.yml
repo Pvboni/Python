@@ -21,6 +21,7 @@ jobs:
       run: |
         pip install feedparser
         pip install secure-smtplib
+        pip install requests
 
     - name: Execute Python script
       run: python PythonTest.py  # Replace 'PythonTest.py' with the name of your Python script
