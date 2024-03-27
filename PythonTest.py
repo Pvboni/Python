@@ -17,7 +17,7 @@ def fetch_latest_news_rss(url):
             if entry_date >= two_days_ago:
                 title = entry.title.strip()
                 link = entry.link
-                content = entry.get('content', '')  # Obtendo o conteúdo completo do artigo
+                content = entry.get('summary', '')  # Obtendo o conteúdo do artigo
                 latest_news.append({'title': title, 'link': link, 'content': content})
     return latest_news
 
@@ -36,35 +36,28 @@ def categorize_articles_with_gemini_api(articles):
     return categorized_articles
 
 def categorize_content_with_gemini_api(content):
-    # Initialize GenerativeModel
-    model = genai.GenerativeModel('gemini-pro')
-    
-    # Define a prompt with the content of the article
-    prompt = f"Classificar o texto:\n{content}\n\n"
+    # Placeholder para a extração de conteúdo relevante
+    extracted_content = content
 
-    # Generate content
-    response = model.generate_content(prompt)
-
-    # Check if content classification was successful
-    if response.candidates:
-        # Extract the predicted category from the first candidate
-        candidate_content = response.candidates[0].content
-        
-        # Attempt to extract text content from available attributes
-        extracted_content = None
-        if hasattr(candidate_content, 'text'):
-            extracted_content = candidate_content.text
-        elif hasattr(candidate_content, 'text_list'):
-            extracted_content = " ".join(candidate_content.text_list)
-        elif hasattr(candidate_content, 'parts'):
-            extracted_content = " ".join([part.text for part in candidate_content.parts])
-        
-        # Return the predicted category
-        if extracted_content:
-            return extracted_content.lower().strip()
+    # Placeholder para a extração de entidades e relações
+    entities = extract_entities(extracted_content)
+    relations = extract_relations(extracted_content)
     
-    # Return 'outro' if classification fails
-    return 'outro'
+    # Placeholder para o cálculo da probabilidade por categoria
+    category_probabilities = {'programa_de_pontos': 0.3, 'promocao_de_passagens_aereas': 0.6, 'outro': 0.1}
+
+    # Retorno da categoria com maior probabilidade
+    return max(category_probabilities.items(), key=lambda x: x[1])[0]
+
+def extract_entities(content):
+    # Função de extração de entidades
+    # Placeholder para implementação real
+    return []
+
+def extract_relations(content):
+    # Função de extração de relações
+    # Placeholder para implementação real
+    return []
 
 if __name__ == "__main__":
     rss_url = "https://pontospravoar.com/feed/"
