@@ -55,8 +55,16 @@ def categorize_content_with_gemini_api(content):
 
     for attempt in range(max_retries):
         try:
-            # Initialize GenerativeModel
-            model = genai.GenerativeModel('gemini-pro')
+            # Adjust parameters for better classification
+            params = {
+                'confidence_threshold': 0.75,
+                'top_k': 3,
+                'model_name': 'travel-and-tourism',
+                # You can add more parameters here based on your needs
+            }
+            
+            # Initialize GenerativeModel with adjusted parameters
+            model = genai.GenerativeModel('gemini-pro', parameters=params)
             
             # Define a prompt with the content of the article
             prompt = f"Classify the text:\n{content}\n\n"
