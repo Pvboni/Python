@@ -36,28 +36,35 @@ def categorize_articles_with_gemini_api(articles):
     return categorized_articles
 
 def categorize_content_with_gemini_api(content):
-    # Placeholder para a extração de conteúdo relevante
-    extracted_content = content
-
-    # Placeholder para a extração de entidades e relações
-    entities = extract_entities(extracted_content)
-    relations = extract_relations(extracted_content)
+    # Initialize GenerativeModel
+    model = genai.GenerativeModel('gemini-pro')
     
-    # Placeholder para o cálculo da probabilidade por categoria
-    category_probabilities = {'programa_de_pontos': 0.3, 'promocao_de_passagens_aereas': 0.6, 'outro': 0.1}
+    # Define a prompt with the content of the article
+    prompt = f"Classificar o texto:\n{content}\n\n"
 
-    # Retorno da categoria com maior probabilidade
-    return max(category_probabilities.items(), key=lambda x: x[1])[0]
+    # Generate content
+    response = model.generate_content(prompt)
 
-def extract_entities(content):
-    # Função de extração de entidades
-    # Placeholder para implementação real
-    return []
-
-def extract_relations(content):
-    # Função de extração de relações
-    # Placeholder para implementação real
-    return []
+    # Check if content classification was successful
+    if response.candidates:
+        # Extract the predicted category from the first candidate
+        candidate_content = response.candidates[0].content
+        
+        # Attempt to extract text content from available attributes
+        extracted_content = None
+        if hasattr(candidate_content, 'text'):
+            extracted_content = candidate_content.text
+        elif hasattr(candidate_content, 'text_list'):
+            extracted_content = " ".join(candidate_content.text_list)
+        elif hasattr(candidate_content, 'parts'):
+            extracted_content = " ".join([part.text for part in candidate_content.parts])
+        
+        # Return the predicted category
+        if extracted_content:
+            return extracted_content.lower().strip()
+    
+    # Return 'outro' if classification fails
+    return 'outro'
 
 if __name__ == "__main__":
     rss_url = "https://pontospravoar.com/feed/"
