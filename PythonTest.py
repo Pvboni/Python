@@ -23,7 +23,10 @@ def categorize_articles_with_gemini_api(articles):
         title = article['title']
         content = article['content']
         category = categorize_content_with_gemini_api(content)
-        categorized_articles[category].append(article)
+        if category in categorized_articles:
+            categorized_articles[category].append(article)
+        else:
+            categorized_articles['outro'].append(article)  # Adiciona à categoria 'outro' se a categoria for desconhecida
     
     return categorized_articles
 
@@ -54,11 +57,9 @@ def categorize_content_with_gemini_api(content):
         # Return the predicted category
         if extracted_content:
             return extracted_content.lower().strip()
-        else:
-            return 'outro'
-    else:
-        # Return 'outro' if classification fails
-        return 'outro'
+    
+    # Return 'outro' if classification fails
+    return 'outro'
 
 if __name__ == "__main__":
     rss_url = "https://pontospravoar.com/feed/"
