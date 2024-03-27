@@ -40,10 +40,22 @@ def categorize_content_with_gemini_api(content):
     # Check if content classification was successful
     if response.candidates:
         # Extract the predicted category from the first candidate
-        predicted_category = response.candidates[0].content.text
+        candidate_content = response.candidates[0].content
+        
+        # Attempt to extract text content from available attributes
+        extracted_content = None
+        if hasattr(candidate_content, 'text'):
+            extracted_content = candidate_content.text
+        elif hasattr(candidate_content, 'text_list'):
+            extracted_content = " ".join(candidate_content.text_list)
+        elif hasattr(candidate_content, 'parts'):
+            extracted_content = " ".join([part.text for part in candidate_content.parts])
         
         # Return the predicted category
-        return predicted_category.lower()
+        if extracted_content:
+            return extracted_content.lower().strip()
+        else:
+            return 'outro'
     else:
         # Return 'outro' if classification fails
         return 'outro'
