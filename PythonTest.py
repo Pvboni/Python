@@ -23,7 +23,6 @@ def fetch_latest_news_rss(url):
 
 def categorize_articles_with_gemini_api(articles):
     categorized_articles = {}
-    categories_count = 0  # Contador para limitar a cinco categorias
     
     for article in articles:
         title = article['title']
@@ -33,29 +32,34 @@ def categorize_articles_with_gemini_api(articles):
             categorized_articles[category].append((title, article['link']))
         else:
             categorized_articles[category] = [(title, article['link'])]
-            categories_count += 1
-        if categories_count >= 5:
-            break  # Limita a cinco categorias
     
     return categorized_articles
 
 def categorize_content_with_gemini_api(content):
-    # Inicializa o GenerativeModel
+    # Initialize GenerativeModel
     model = genai.GenerativeModel('gemini-pro')
     
-    # Define uma expressão na prompt para indicar a classificação desejada
-    prompt = f"Classificar o texto e agrupar por categoria:\n{content}\n\n"
-    
-    # Gera o conteúdo
+    # Define a prompt with the content of the article
+    prompt = f"Classificar o texto:\n{content}\n\n"
+
+    # Generate content
     response = model.generate_content(prompt)
 
-    # Verifica se a classificação do conteúdo foi bem-sucedida
+    # Check if content classification was successful
     if response.candidates:
-        # Extrai a categoria prevista do primeiro candidato
-        predicted_category = response.candidates[0].content.text
-        return predicted_category.lower().strip()
+        # Extract the predicted category from the first candidate
+        candidate_content = response.candidates[0].content
+        
+        # Attempt to extract text content from available attributes
+        extracted_content = None
+        if hasattr(candidate_content, 'parts'):
+            extracted_content = " ".join([part.text for part in candidate_content.parts])
+        
+        # Return the predicted category
+        if extracted_content:
+            return extracted_content.lower().strip()
     
-    # Retorna 'outro' se a classificação falhar
+    # Return 'outro' if classification fails
     return 'outro'
 
 if __name__ == "__main__":
