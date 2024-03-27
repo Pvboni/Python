@@ -17,7 +17,7 @@ def fetch_latest_news_rss(url):
     return latest_news
 
 def categorize_articles_with_gemini_api(articles):
-    categorized_articles = {'programa_de_pontos': [], 'promocao_de_passagens_aereas': [], 'outro': []}
+    categorized_articles = {}
     
     for article in articles:
         title = article['title']
@@ -26,7 +26,7 @@ def categorize_articles_with_gemini_api(articles):
         if category in categorized_articles:
             categorized_articles[category].append(article)
         else:
-            categorized_articles['outro'].append(article)  # Adiciona à categoria 'outro' se a categoria for desconhecida
+            categorized_articles[category] = [article]
     
     return categorized_articles
 
