@@ -7,14 +7,13 @@ API_KEY = "AIzaSyANhQXJDd-PLX94-CqaVlprs8qG9_Slzq0"
 genai.configure(api_key=API_KEY)
 
 def fetch_latest_news_rss(url):
+    two_days_ago = datetime.now() - timedelta(days=2)
     news_feed = feedparser.parse(url)
     latest_news = []
-    two_days_ago = datetime.now() - timedelta(days=2)  # Obtém a data de dois dias atrás
     if 'entries' in news_feed:
         for entry in news_feed.entries:
-            # Converte a data da entrada para um objeto datetime
-            entry_date = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S %z")
-            # Verifica se a entrada é dos últimos dois dias
+            entry_date = datetime(*entry.published_parsed[:6])
+            # Verifica se a data da entrada é posterior a dois dias atrás
             if entry_date >= two_days_ago:
                 title = entry.title.strip()
                 link = entry.link
@@ -30,9 +29,9 @@ def categorize_articles_with_gemini_api(articles):
         content = article['content']
         category = categorize_content_with_gemini_api(content)
         if category in categorized_articles:
-            categorized_articles[category].append({'title': title, 'link': article['link']})
+            categorized_articles[category].append((title, article['link']))
         else:
-            categorized_articles[category] = [{'title': title, 'link': article['link']}]
+            categorized_articles[category] = [(title, article['link'])]
     
     return categorized_articles
 
@@ -75,5 +74,5 @@ if __name__ == "__main__":
     for category, articles in categorized_articles.items():
         print(f"{category.capitalize()}:")
         for article in articles:
-            print(f"Titulo: {article['title']}, Link: {article['link']}")
+            print(f"{article[0]} - {article[1]}")
         print()
