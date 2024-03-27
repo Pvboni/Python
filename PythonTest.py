@@ -1,6 +1,7 @@
 import feedparser
 import google.generativeai as genai
 from datetime import datetime, timedelta
+from collections import Counter
 
 # Define the API Key for Gemini
 API_KEY = "AIzaSyANhQXJDd-PLX94-CqaVlprs8qG9_Slzq0"
@@ -13,25 +14,37 @@ def fetch_latest_news_rss(url):
     if 'entries' in news_feed:
         for entry in news_feed.entries:
             entry_date = datetime(*entry.published_parsed[:6])
-            # Verifica se a data da entrada é posterior a dois dias atrás
+            # Check if the entry date is within the last two days
             if entry_date >= two_days_ago:
                 title = entry.title.strip()
                 link = entry.link
-                content = entry.get('summary', '')  # Obtendo o conteúdo do artigo
+                content = entry.get('summary', '')  # Obtain the content of the article
                 latest_news.append({'title': title, 'link': link, 'content': content})
     return latest_news
 
 def categorize_articles_with_gemini_api(articles):
     categorized_articles = {}
+    categories_counter = Counter()
     
+    # Iterate through each article and categorize them
     for article in articles:
         title = article['title']
         content = article['content']
         category = categorize_content_with_gemini_api(content)
-        if category in categorized_articles:
-            categorized_articles[category].append((title, article['link']))
+        categories_counter[category] += 1
+        
+        # Limit categories to top 5
+        if len(categories_counter) <= 5:
+            if category in categorized_articles:
+                categorized_articles[category].append((title, article['link']))
+            else:
+                categorized_articles[category] = [(title, article['link'])]
         else:
-            categorized_articles[category] = [(title, article['link'])]
+            # Group remaining articles under 'other' category
+            if 'other' in categorized_articles:
+                categorized_articles['other'].append((title, article['link']))
+            else:
+                categorized_articles['other'] = [(title, article['link'])]
     
     return categorized_articles
 
@@ -40,7 +53,7 @@ def categorize_content_with_gemini_api(content):
     model = genai.GenerativeModel('gemini-pro')
     
     # Define a prompt with the content of the article
-    prompt = f"Classificar o texto:\n{content}\n\n"
+    prompt = f"Classify the text:\n{content}\n\n"
 
     # Generate content
     response = model.generate_content(prompt)
@@ -59,8 +72,8 @@ def categorize_content_with_gemini_api(content):
         if extracted_content:
             return extracted_content.lower().strip()
     
-    # Return 'outro' if classification fails
-    return 'outro'
+    # Return 'other' if classification fails
+    return 'other'
 
 if __name__ == "__main__":
     rss_url = "https://pontospravoar.com/feed/"
