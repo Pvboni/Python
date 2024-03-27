@@ -40,7 +40,7 @@ def categorize_content_with_gemini_api(content):
     # Check if content classification was successful
     if response.candidates:
         # Extract the predicted category from the first candidate
-        predicted_category = response.candidates[0].content
+        predicted_category = response.candidates[0].content.text
         
         # Return the predicted category
         return predicted_category.lower()
