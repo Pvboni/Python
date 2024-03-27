@@ -1,7 +1,7 @@
 import feedparser
 import google.generativeai as genai
 from datetime import datetime, timedelta
-from collections import Counter
+import time
 
 # Define the API Key for Gemini
 API_KEY = "AIzaSyANhQXJDd-PLX94-CqaVlprs8qG9_Slzq0"
@@ -14,37 +14,25 @@ def fetch_latest_news_rss(url):
     if 'entries' in news_feed:
         for entry in news_feed.entries:
             entry_date = datetime(*entry.published_parsed[:6])
-            # Check if the entry date is within the last two days
+            # Verifica se a data da entrada é posterior a dois dias atrás
             if entry_date >= two_days_ago:
                 title = entry.title.strip()
                 link = entry.link
-                content = entry.get('summary', '')  # Obtain the content of the article
+                content = entry.get('summary', '')  # Obtendo o conteúdo do artigo
                 latest_news.append({'title': title, 'link': link, 'content': content})
     return latest_news
 
 def categorize_articles_with_gemini_api(articles):
     categorized_articles = {}
-    categories_counter = Counter()
     
-    # Iterate through each article and categorize them
     for article in articles:
         title = article['title']
         content = article['content']
         category = categorize_content_with_gemini_api(content)
-        categories_counter[category] += 1
-        
-        # Limit categories to top 5
-        if len(categories_counter) <= 5:
-            if category in categorized_articles:
-                categorized_articles[category].append((title, article['link']))
-            else:
-                categorized_articles[category] = [(title, article['link'])]
+        if category in categorized_articles:
+            categorized_articles[category].append((title, article['link']))
         else:
-            # Group remaining articles under 'other' category
-            if 'other' in categorized_articles:
-                categorized_articles['other'].append((title, article['link']))
-            else:
-                categorized_articles['other'] = [(title, article['link'])]
+            categorized_articles[category] = [(title, article['link'])]
     
     return categorized_articles
 
@@ -53,27 +41,41 @@ def categorize_content_with_gemini_api(content):
     model = genai.GenerativeModel('gemini-pro')
     
     # Define a prompt with the content of the article
-    prompt = f"Classify the text:\n{content}\n\n"
+    prompt = f"Classificar o texto:\n{content}\n\n"
 
-    # Generate content
-    response = model.generate_content(prompt)
+    # Retry logic to handle potential errors
+    max_retries = 3
+    retries = 0
+    while retries < max_retries:
+        try:
+            # Generate content
+            response = model.generate_content(prompt)
 
-    # Check if content classification was successful
-    if response.candidates:
-        # Extract the predicted category from the first candidate
-        candidate_content = response.candidates[0].content
+            # Check if content classification was successful
+            if response.candidates:
+                # Extract the predicted category from the first candidate
+                candidate_content = response.candidates[0].content
+                
+                # Attempt to extract text content from available attributes
+                extracted_content = None
+                if hasattr(candidate_content, 'parts'):
+                    extracted_content = " ".join([part.text for part in candidate_content.parts])
+                
+                # Return the predicted category
+                if extracted_content:
+                    return extracted_content.lower().strip()
+            
+            # If classification fails, return 'outro'
+            return 'outro'
         
-        # Attempt to extract text content from available attributes
-        extracted_content = None
-        if hasattr(candidate_content, 'parts'):
-            extracted_content = " ".join([part.text for part in candidate_content.parts])
-        
-        # Return the predicted category
-        if extracted_content:
-            return extracted_content.lower().strip()
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            print("Retrying...")
+            retries += 1
+            time.sleep(1)  # Wait for a second before retrying
     
-    # Return 'other' if classification fails
-    return 'other'
+    # Return 'outro' if classification fails after retries
+    return 'outro'
 
 if __name__ == "__main__":
     rss_url = "https://pontospravoar.com/feed/"
