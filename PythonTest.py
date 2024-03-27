@@ -17,23 +17,21 @@ def fetch_latest_news_rss(url):
             if entry_date >= two_days_ago:
                 title = entry.title.strip()
                 link = entry.link
-                content = entry.get('summary', '')  # Obtendo o conteúdo do artigo
+                content = entry.get('content', '')  # Obtendo o conteúdo completo do artigo
                 latest_news.append({'title': title, 'link': link, 'content': content})
     return latest_news
 
 def categorize_articles_with_gemini_api(articles):
-    categorized_articles = {'programa_de_pontos': [], 'promocao_de_passagens_aereas': [], 'outro': []}
+    categorized_articles = {}
     
     for article in articles:
         title = article['title']
         content = article['content']
         category = categorize_content_with_gemini_api(content)
-        if category == 'programa_de_pontos':
-            categorized_articles['programa_de_pontos'].append((title, article['link']))
-        elif category == 'promocao_de_passagens_aereas':
-            categorized_articles['promocao_de_passagens_aereas'].append((title, article['link']))
+        if category in categorized_articles:
+            categorized_articles[category].append((title, article['link']))
         else:
-            categorized_articles['outro'].append((title, article['link']))
+            categorized_articles[category] = [(title, article['link'])]
     
     return categorized_articles
 
@@ -73,10 +71,8 @@ if __name__ == "__main__":
     latest_news = fetch_latest_news_rss(rss_url)
     categorized_articles = categorize_articles_with_gemini_api(latest_news)
 
-    # Imprimir as categorias ordenadas
-    ordered_categories = ['programa_de_pontos', 'promocao_de_passagens_aereas', 'outro']
-    for category in ordered_categories:
+    for category, articles in categorized_articles.items():
         print(f"{category.capitalize()}:")
-        for article in categorized_articles[category]:
+        for article in articles:
             print(f"{article[0]} - {article[1]}")
         print()
