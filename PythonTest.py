@@ -9,7 +9,7 @@ from nltk.tokenize import word_tokenize
 # Download NLTK resources
 nltk.download('punkt')
 
-# Define the API Key for Gemini
+# Define o API Key para o Gemini
 API_KEY = "AIzaSyANhQXJDd-PLX94-CqaVlprs8qG9_Slzq0"
 genai.configure(api_key=API_KEY)
 
@@ -20,20 +20,20 @@ def fetch_latest_news_rss(url):
     if 'entries' in news_feed:
         for entry in news_feed.entries:
             entry_date = datetime(*entry.published_parsed[:6])
-            # Check if the entry date is within the last two days
+            # Verifica se a data de entrada está dentro dos últimos dois dias
             if entry_date >= two_days_ago:
                 title = entry.title.strip()
                 link = entry.link
-                content = entry.get('summary', '')  # Obtain the content of the article
+                content = entry.get('summary', '')  # Obtém o conteúdo do artigo
                 latest_news.append({'title': title, 'link': link, 'content': content})
     return latest_news
 
 def extract_keywords(content):
-    # Tokenize the content
+    # Tokenize o conteúdo
     tokens = word_tokenize(content.lower())
-    # Define travel-related keywords
-    travel_keywords = ["flight", "destination", "hotel", "travel", "tour", "trip"]
-    # Extract keywords related to travel
+    # Define palavras-chave relacionadas a viagens
+    travel_keywords = ["flight", "destination", "hotel", "travel", "tour", "trip", "journey", "vacation", "holiday", "getaway", "adventure"]
+    # Extract palavras-chave relacionadas a viagens
     travel_related_tokens = [token for token in tokens if token in travel_keywords]
     return travel_related_tokens
 
@@ -41,23 +41,23 @@ def categorize_articles_with_gemini_api(articles):
     categorized_articles = {}
     categories_counter = Counter()
     
-    # Iterate through each article and categorize them
+    # Itera através de cada artigo e os categoriza
     for article in articles:
         title = article['title']
         content = article['content']
-        # Extract keywords
+        # Extract palavras-chave
         keywords = extract_keywords(content)
         category = categorize_content_with_gemini_api(content)
         categories_counter[category] += 1
         
-        # Limit categories to top 5
+        # Limita as categorias para as cinco principais
         if len(categories_counter) <= 5:
             if category in categorized_articles:
                 categorized_articles[category].append((title, article['link'], keywords))
             else:
                 categorized_articles[category] = [(title, article['link'], keywords)]
         else:
-            # Group remaining articles under 'other' category
+            # Agrupa os artigos restantes na categoria 'other'
             if 'other' in categorized_articles:
                 categorized_articles['other'].append((title, article['link'], keywords))
             else:
@@ -66,36 +66,36 @@ def categorize_articles_with_gemini_api(articles):
     return categorized_articles
 
 def categorize_content_with_gemini_api(content):
-    # Number of retries
+    # Número de tentativas
     max_retries = 3
 
     for attempt in range(max_retries):
         try:
-            # Initialize GenerativeModel
+            # Inicializa o GenerativeModel
             model = genai.GenerativeModel('gemini-pro')
             
-            # Define a prompt with the content of the article
+            # Define um prompt com o conteúdo do artigo
             prompt = f"Classify the text:\n{content}\n\n"
 
-            # Generate content
+            # Gera o conteúdo
             response = model.generate_content(prompt)
 
-            # Check if content classification was successful
+            # Verifica se a classificação do conteúdo foi bem-sucedida
             if response.candidates:
-                # Extract the predicted category from the first candidate
+                # Extrai a categoria prevista do primeiro candidato
                 candidate_content = response.candidates[0].content
                 
-                # Attempt to extract text content from available attributes
+                # Tenta extrair o conteúdo de texto dos atributos disponíveis
                 extracted_content = None
                 if hasattr(candidate_content, 'parts'):
                     extracted_content = " ".join([part.text for part in candidate_content.parts])
                 
-                # Return the predicted category
+                # Retorna a categoria prevista
                 if extracted_content:
                     return extracted_content.lower().strip()
             
-            # If no successful response, wait for some time before retrying
-            time.sleep(5)  # Wait for 5 seconds before retrying
+            # Se não houver resposta bem-sucedida, aguarde um tempo antes de tentar novamente
+            time.sleep(5)  # Espera 5 segundos antes de tentar novamente
 
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -105,7 +105,7 @@ def categorize_content_with_gemini_api(content):
                 print("Maximum retries reached. Exiting...")
                 return 'other'
 
-    # Return 'other' if classification fails
+    # Retorna 'other' se a classificação falhar
     return 'other'
 
 if __name__ == "__main__":
