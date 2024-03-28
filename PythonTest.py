@@ -3,6 +3,11 @@ import google.generativeai as genai
 from datetime import datetime, timedelta
 from collections import Counter
 import time
+import nltk
+from nltk.tokenize import word_tokenize
+
+# Download NLTK resources
+nltk.download('punkt')
 
 # Define the API Key for Gemini
 API_KEY = "AIzaSyANhQXJDd-PLX94-CqaVlprs8qG9_Slzq0"
@@ -23,6 +28,15 @@ def fetch_latest_news_rss(url):
                 latest_news.append({'title': title, 'link': link, 'content': content})
     return latest_news
 
+def extract_keywords(content):
+    # Tokenize the content
+    tokens = word_tokenize(content.lower())
+    # Define travel-related keywords
+    travel_keywords = ["flight", "destination", "hotel", "travel", "tour", "trip"]
+    # Extract keywords related to travel
+    travel_related_tokens = [token for token in tokens if token in travel_keywords]
+    return travel_related_tokens
+
 def categorize_articles_with_gemini_api(articles):
     categorized_articles = {}
     categories_counter = Counter()
@@ -31,21 +45,23 @@ def categorize_articles_with_gemini_api(articles):
     for article in articles:
         title = article['title']
         content = article['content']
+        # Extract keywords
+        keywords = extract_keywords(content)
         category = categorize_content_with_gemini_api(content)
         categories_counter[category] += 1
         
         # Limit categories to top 5
         if len(categories_counter) <= 5:
             if category in categorized_articles:
-                categorized_articles[category].append((title, article['link']))
+                categorized_articles[category].append((title, article['link'], keywords))
             else:
-                categorized_articles[category] = [(title, article['link'])]
+                categorized_articles[category] = [(title, article['link'], keywords)]
         else:
             # Group remaining articles under 'other' category
             if 'other' in categorized_articles:
-                categorized_articles['other'].append((title, article['link']))
+                categorized_articles['other'].append((title, article['link'], keywords))
             else:
-                categorized_articles['other'] = [(title, article['link'])]
+                categorized_articles['other'] = [(title, article['link'], keywords)]
     
     return categorized_articles
 
@@ -55,16 +71,8 @@ def categorize_content_with_gemini_api(content):
 
     for attempt in range(max_retries):
         try:
-            # Adjust parameters for better classification
-            params = {
-                'confidence_threshold': 0.75,
-                'top_k': 3,
-                'model_name': 'travel-and-tourism',
-                # You can add more parameters here based on your needs
-            }
-            
-            # Initialize GenerativeModel with adjusted parameters
-            model = genai.GenerativeModel('gemini-pro', parameters=params)
+            # Initialize GenerativeModel
+            model = genai.GenerativeModel('gemini-pro')
             
             # Define a prompt with the content of the article
             prompt = f"Classify the text:\n{content}\n\n"
@@ -108,5 +116,6 @@ if __name__ == "__main__":
     for category, articles in categorized_articles.items():
         print(f"{category.capitalize()}:")
         for article in articles:
-            print(f"{article[0]} - {article[1]}")
+            keywords = ', '.join(article[2])
+            print(f"{article[0]} - {article[1]} - Keywords: {keywords}")
         print()
