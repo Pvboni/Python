@@ -31,11 +31,9 @@ def fetch_latest_news_rss(url):
 def extract_keywords(content):
     # Tokenize o conteúdo
     tokens = word_tokenize(content.lower())
-    # Define palavras-chave relacionadas a viagens
-    travel_keywords = ["flight", "destination", "hotel", "travel", "tour", "trip", "journey", "vacation", "holiday", "getaway", "adventure"]
-    # Extract palavras-chave relacionadas a viagens
-    travel_related_tokens = [token for token in tokens if token in travel_keywords]
-    return travel_related_tokens
+    # Extrai palavras-chave
+    keywords = list(set(tokens))  # Remove duplicatas
+    return keywords
 
 def categorize_articles_with_gemini_api(articles):
     categorized_articles = {}
